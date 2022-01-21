@@ -1,0 +1,49 @@
+#objective 1 : To evaluate middle-aged women's performance in learning Arabic based on post-test and pre-test time and task completion over the use of Kahoot!
+
+#load data
+kahoot_red_time<-read.csv(file="C:/Users/norazyrabinti.omar/Documents/R Project/DS Project/kahoot_red_time.csv")
+head(kahoot_red_time)
+
+# quick look at data
+tibble::glimpse(kahoot_red_time)
+
+#load package
+library(dplyr)
+library(plotrix)
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+library(rmarkdown)
+library(sqldf)
+library(pivottabler)
+
+# Transform into long data: 
+# gather the before and after values in the same column
+kahoot_red_time.long <- kahoot_red_time %>%
+  gather(key = "test", value = "time", pre, post)
+head(kahoot_red_time.long, 3)
+
+
+group_by(kahoot_red_time.long, test) %>%
+  summarise(
+    count = n(),
+    mean = mean(time, na.rm = TRUE),
+    sd = sd(time, na.rm = TRUE)
+  )
+
+ggboxplot(kahoot_red_time.long, x = "test", y = "time", 
+          color = "test", palette = c("#00AFBB", "#E7B800"),
+          order = c("pre", "post"),
+          ylab = "time", xlab = "Red Pattern Test")
+
+
+# compute the difference
+d <- with(kahoot_red_time.long, 
+          time[test == "pre"] - time[test == "post"])
+# Shapiro-Wilk normality test for the differences
+shapiro.test(d) # => p-value = 0.6141
+
+# Compute t-test
+res <- t.test(time ~ test, data = kahoot_red_time.long, paired = TRUE)
+res
+
