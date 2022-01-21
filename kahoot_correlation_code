@@ -1,0 +1,93 @@
+#correlation for red pattern
+
+#load package
+library(dplyr)
+library(plotrix)
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+library(rmarkdown)
+library(sqldf)
+library(pivottabler)
+library(corrplot)
+library(report)
+
+#load data
+kahoot_red<-read.csv(file="C:/Users/norazyrabinti.omar/Documents/R Project/DS Project/kahoot_red.csv")
+head(kahoot_red)
+
+# quick look at data
+tibble::glimpse(kahoot_red)
+
+
+corrplot(cor(kahoot_red),
+         method = "number",
+         type = "upper" # show only upper side
+)
+
+
+res <- cor.test(kahoot_red$pre_score, kahoot_red$pre_comp_time, 
+                method = "pearson")
+res
+
+res2 <- cor.test(kahoot_red$post_score, kahoot_red$post_comp_time, 
+                method = "pearson")
+res2
+
+test <- cor.test(kahoot_red$pre_score, kahoot_red$pre_comp_time)
+test
+
+report(test)
+
+test2 <- cor.test(kahoot_red$post_score, kahoot_red$post_comp_time)
+test2
+
+report(test2)
+
+---------------------------------------------------------------------------------
+  #correlation for green pattern
+  
+  #load package
+  library(dplyr)
+library(plotrix)
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+library(rmarkdown)
+library(sqldf)
+library(pivottabler)
+library(corrplot)
+library(report)
+
+#load data
+kahoot_green<-read.csv(file="C:/Users/norazyrabinti.omar/Documents/R Project/DS Project/kahoot_green.csv")
+head(kahoot_green)
+
+# quick look at data
+tibble::glimpse(kahoot_green)
+
+
+corrplot(cor(kahoot_green),
+         method = "number",
+         type = "upper" # show only upper side
+)
+
+
+
+res3 <- cor.test(kahoot_green$pre_score, kahoot_green$pre_comp_time, 
+                method = "pearson")
+res3
+
+res4 <- cor.test(kahoot_green$post_score, kahoot_green$post_comp_time, 
+                 method = "pearson")
+res4
+
+test3 <- cor.test(kahoot_green$pre_score, kahoot_green$pre_comp_time)
+test3
+
+report(test3)
+
+test4 <- cor.test(kahoot_green$post_score, kahoot_green$post_comp_time)
+test4
+
+report(test4)
