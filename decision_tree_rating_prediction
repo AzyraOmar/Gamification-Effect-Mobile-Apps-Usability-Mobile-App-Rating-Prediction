@@ -1,0 +1,95 @@
+##Install and load the requires packages
+#Step 1  Loading required packages
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(caretEnsemble)
+library(psych)
+library(Amelia)
+library(mice)
+library(GGally)
+library(rpart)
+library(randomForest)
+library (missForest)
+library(VIM)
+library(klaR)
+library(e1071)
+library(caTools)
+library(MASS)
+library(caret)
+library(dplyr)
+library(rpart)
+library(rpart.plot)
+library(DAAG)
+library(party)
+library(mlbench)
+library(pROC)
+library(tree)
+
+##Import the data set
+#STep 2 : Reading data into R
+data<- read.csv("C:/Users/norazyrabinti.omar/Documents/R Project/DS Project/Prediction/rating_pred.csv")
+
+#Setting outcome variables as categorical
+data$rating <- factor(data$rating, levels = c(1,0), labels = c("good", "bad"))
+data$rating
+
+#Studying the Data Set
+#Step 3 : Studying the structure of the data
+str(data)
+head(data)
+describe(data)
+
+#Step 4: Data Cleaning
+colSums(is.na(data))
+
+##mean imputation of multiple columns (i.e. the whole data frame) #####
+
+for(i in 1:ncol(data)) {
+  data[ , i][is.na(data[ , i])] <- mean(data[ , i], na.rm = TRUE)
+}
+colSums(is.na(data))
+
+# Convert all columns to factor
+data <- as.data.frame(unclass(data),                     
+                      stringsAsFactors = TRUE)
+
+#build model
+sample_data = sample.split(data, SplitRatio = 0.7)
+train_data <- subset(data, sample_data == TRUE)
+test_data <- subset(data, sample_data == FALSE)
+
+dt<- ctree(rating ~ ., train_data)
+
+test_pred <- predict(dt, newdata = test_data)
+test_pred
+
+cm_dt = table(test_pred, test_data$rating)
+cm_dt
+
+confusionMatrix(cm_dt)
+
+false_positives<-cm_dt[1,2]
+false_positives
+false_negatives<-cm_dt[2,1]
+false_negatives
+
+true_positives<-cm_dt[1,1]
+true_positives
+true_negatives<-cm_dt[2,2]
+true_negatives
+
+specificity(cm_dt)
+sensitivity(cm_dt)
+
+accuracy <- (true_positives + true_negatives) / (true_positives + false_negatives + false_positives + true_negatives)
+accuracy
+
+recall <-true_positives/ (true_positives + false_negatives)
+recall
+
+precision <-true_positives/ (true_positives + false_positives)
+precision
+
+Fmeasure <- (2*precision*recall) / (precision + recall)
+Fmeasure
