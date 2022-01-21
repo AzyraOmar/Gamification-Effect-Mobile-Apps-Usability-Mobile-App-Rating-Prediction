@@ -1,0 +1,49 @@
+#objective 1 : To evaluate middle-aged women's performance in learning Arabic based on post-test and pre-test score and task completion over the use of Kahoot!
+
+#load data
+kahoot_green_score<-read.csv(file="C:/Users/norazyrabinti.omar/Documents/R Project/DS Project/kahoot_green_score.csv")
+head(kahoot_green_score)
+
+# quick look at data
+tibble::glimpse(kahoot_green_score)
+
+#load package
+library(dplyr)
+library(plotrix)
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+library(rmarkdown)
+library(sqldf)
+library(pivottabler)
+
+# Transform into long data: 
+# gather the before and after values in the same column
+kahoot_green_score.long <- kahoot_green_score %>%
+  gather(key = "test", value = "score", pre, post)
+head(kahoot_green_score.long, 3)
+
+
+group_by(kahoot_green_score.long, test) %>%
+  summarise(
+    count = n(),
+    mean = mean(score, na.rm = TRUE),
+    sd = sd(score, na.rm = TRUE)
+  )
+
+ggboxplot(kahoot_green_score.long, x = "test", y = "score", 
+          color = "test", palette = c("#00AFBB", "#E7B800"),
+          order = c("pre", "post"),
+          ylab = "score", xlab = "Green Pattern Test")
+
+
+# compute the difference
+d <- with(kahoot_green_score.long, 
+          score[test == "pre"] - score[test == "post"])
+# Shapiro-Wilk normality test for the differences
+shapiro.test(d) # => p-value = 0.6141
+
+# Compute t-test
+res <- t.test(score ~ test, data = kahoot_green_score.long, paired = TRUE)
+res
+
