@@ -1,0 +1,99 @@
+##Install and load the requires packages
+#Step 1  Loading required packages
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(caretEnsemble)
+library(psych)
+library(Amelia)
+library(mice)
+library(GGally)
+library(rpart)
+library(randomForest)
+library (missForest)
+library(VIM)
+library(klaR)
+library(e1071)
+library(caTools)
+library(MASS)
+library(caret)
+library(dplyr)
+library(kernlab)
+
+##Import the data set
+#STep 2 : Reading data into R
+data<- read.csv("C:/Users/norazyrabinti.omar/Documents/R Project/DS Project/Prediction/rating_pred.csv")
+
+#Setting outcome variables as categorical
+data$rating <- factor(data$rating, levels = c(1,0), labels = c("good", "bad"))
+data$rating
+
+#Studying the Data Set
+#Step 3 : Studying the structure of the data
+str(data)
+head(data)
+describe(data)
+
+#Step 4: Data Cleaning
+colSums(is.na(data))
+
+##mean imputation of multiple columns (i.e. the whole data frame) #####
+
+for(i in 1:ncol(data)) {
+  data[ , i][is.na(data[ , i])] <- mean(data[ , i], na.rm = TRUE)
+}
+colSums(is.na(data))
+
+
+#Step 5 : Data Modelling
+# Splitting data into train
+# and test data
+intrain <- createDataPartition(y = data$rating, p= 0.7, list = FALSE)
+training <- data[intrain,]
+testing <- data[-intrain,]
+
+#To convert prediction value to categorical variables
+training[["rating"]] = factor(training[["rating"]])
+
+#control all the computational overheads
+trctrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+
+#Step 6 : Model Evaluation
+svm_Linear <- train(rating ~., data = training, method = "svmLinear",
+                    trControl=trctrl,
+                    preProcess = c("center", "scale"),
+                    tuneLength = 10)
+
+test_pred <- predict(svm_Linear, newdata = testing)
+test_pred
+
+cm_svm = table(test_pred, testing$rating)
+cm_svm
+
+confusionMatrix(cm_svm)
+
+false_positives<-cm_svm[1,2]
+false_positives
+false_negatives<-cm_svm[2,1]
+false_negatives
+
+true_positives<-cm_svm[1,1]
+true_positives
+true_negatives<-cm_svm[2,2]
+true_negatives
+
+specificity(cm_svm)
+sensitivity(cm_svm)
+
+
+accuracy <- (true_positives + true_negatives) / (true_positives + false_negatives + false_positives + true_negatives)
+accuracy
+
+recall <-true_positives/ (true_positives + false_negatives)
+recall
+
+precision <-true_positives/ (true_positives + false_positives)
+precision
+
+Fmeasure <- (2*precision*recall) / (precision + recall)
+Fmeasure
