@@ -1,0 +1,43 @@
+#load package
+library(dplyr)
+library(plotrix)
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+library(rmarkdown)
+library(sqldf)
+library(pivottabler)
+
+#load data
+mobile<-read.csv(file="C:/Users/norazyrabinti.omar/Documents/R Project/DS Project/screen_recording.csv")
+head(mobile)
+
+# quick look at data
+tibble::glimpse(mobile)
+
+#Transform into long data: 
+# gather the before and after values in the same column
+mobile.long <- mobile %>%
+#1. overall  
+gather(key = "group", value = "data", no_of_tapping_quiz_1, no_of_tapping_quiz_2,no_of_attempts_quiz_1,no_of_attempts_quiz_2,task_comp_time_quiz_1_sec,task_comp_time_quiz_2_sec,score_quiz_1,score_quiz_2,no_of_times_asking_help_quiz_1,no_of_times_asking_help_quiz_2,overall_satisfaction,easy_to_use,easy_to_learn,future_use,recommend_to_others,
+        )
+#2.tapping  
+#gather(key = "group", value = "data", tapping_registration,tapping_login,tapping_payment,tapping_manual_reading,tapping_panduan,tapping_alasan,tapping_pola_warna,tapping_pola_merah,tapping_pola_hijau,tapping_quiz_login
+#)
+#3.attempts
+#gather(key = "group", value = "data",attempts_registration,attempts_login,attempts_payment,attempts_manual_reading,attempts_panduan,attempts_alasan,attempts_pola_warna,attempts_pola_merah,attempts_pola_hijau,attempts_quiz_login
+ #      )
+#4.completion time
+#gather(key = "group", value = "data", comp_times_registration,comp_times_login,comp_times_payment,comp_times_manual_reading,comp_times_panduan,comp_times_alasan,comp_times_pola_warna,comp_times_pola_merah,comp_times_pola_hijau,comp_times_quiz_login
+#)
+#5. help
+#gather(key = "group", value = "data", help_registration,help_login,help_payment,help_manual_reading,help_panduan,help_alasan,help_pola_warna,help_pola_merah,help_pola_hijau,help_quiz_login
+#)
+head(mobile.long, 3)
+
+
+#To summarize paired sample statistics
+mobile.long  %>%
+  group_by(group) %>%
+get_summary_stats(data, show = c("mean", "sd", "min", "max"))
+ ##get_summary_stats(data, show = c("mean"))
