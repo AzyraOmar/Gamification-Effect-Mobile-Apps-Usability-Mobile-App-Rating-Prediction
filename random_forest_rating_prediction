@@ -1,0 +1,90 @@
+##Install and load the requires packages
+#Step 1  Loading required packages
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(caretEnsemble)
+library(psych)
+library(Amelia)
+library(mice)
+library(GGally)
+library(rpart)
+library(randomForest)
+library (missForest)
+library(VIM)
+library(klaR)
+library(e1071)
+library(caTools)
+library(MASS)
+library(caret)
+library(dplyr)
+
+##Import the data set
+#STep 2 : Reading data into R
+data<- read.csv("C:/Users/norazyrabinti.omar/Documents/R Project/DS Project/Prediction/rating_pred.csv")
+
+#Setting outcome variables as categorical
+data$rating <- factor(data$rating, levels = c(1,0), labels = c("good", "bad"))
+data$rating
+
+#Studying the Data Set
+#Step 3 : Studying the structure of the data
+str(data)
+head(data)
+describe(data)
+
+#Step 4: Data Cleaning
+colSums(is.na(data))
+
+##mean imputation of multiple columns (i.e. the whole data frame) #####
+
+for(i in 1:ncol(data)) {
+  data[ , i][is.na(data[ , i])] <- mean(data[ , i], na.rm = TRUE)
+}
+colSums(is.na(data))
+
+
+#Step 5 : Data Modelling
+# Splitting data into train
+# and test data
+sample = sample.split(data$rating, SplitRatio = .70)
+train = subset(data, sample == TRUE)
+test  = subset(data, sample == FALSE)
+
+#Step 6 : Model Evaluation
+rf <- randomForest(
+  rating ~ .,
+  data=train
+)
+
+pred = predict(rf, newdata=test[-16])
+
+cm_rf = table(pred,test[,16])
+cm_rf
+
+confusionMatrix(cm_rf)
+
+false_positives<-cm_rf[1,2]
+false_positives
+false_negatives<-cm_rf[2,1]
+false_negatives
+
+true_positives<-cm_rf[1,1]
+true_positives
+true_negatives<-cm_rf[2,2]
+true_negatives
+  
+specificity(cm_rf)
+sensitivity(cm_rf)
+
+accuracy <- (true_positives + true_negatives) / (true_positives + false_negatives + false_positives + true_negatives)
+accuracy
+
+recall <-true_positives/ (true_positives + false_negatives)
+recall
+
+precision <-true_positives/ (true_positives + false_positives)
+precision
+
+Fmeasure <- (2*precision*recall) / (precision + recall)
+Fmeasure
