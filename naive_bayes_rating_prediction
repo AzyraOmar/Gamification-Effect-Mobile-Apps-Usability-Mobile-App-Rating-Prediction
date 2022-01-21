@@ -1,0 +1,92 @@
+##Install and load the requires packages
+#Step 1  Loading required packages
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(caretEnsemble)
+library(psych)
+library(Amelia)
+library(mice)
+library(GGally)
+library(rpart)
+library(randomForest)
+library (missForest)
+library(VIM)
+library(klaR)
+library(e1071)
+library(caTools)
+library(MASS)
+library(caret)
+
+##Import the data set
+#STep 2 : Reading data into R
+data<- read.csv("C:/Users/norazyrabinti.omar/Documents/R Project/DS Project/Prediction/rating_pred.csv")
+
+#Setting outcome variables as categorical
+data$rating <- factor(data$rating, levels = c(1,0), labels = c("good", "bad"))
+data$rating
+
+#Studying the Data Set
+#Step 3 : Studying the structure of the data
+str(data)
+head(data)
+describe(data)
+
+#Step 4: Data Cleaning
+is.na(data)
+
+##mean imputation of multiple columns (i.e. the whole data frame) #####
+
+for(i in 1:ncol(data)) {
+  data[ , i][is.na(data[ , i])] <- mean(data[ , i], na.rm = TRUE)
+}
+head(data) # Check first 6 rows after substitution by mean
+
+!is.null(data)
+data<-data
+head(data)
+str(data)
+
+#Step 5 : Data Modelling
+# Splitting data into train
+# and test data
+split <- sample.split(data, SplitRatio = 0.70)
+train_cl <- subset(data, split == "TRUE")
+test_cl <- subset(data, split == "FALSE")
+
+# Fitting Naive Bayes Model
+# to training dataset
+NB_model <- naiveBayes(rating ~ ., data = train_cl)
+
+# Predicting on test data'
+y_pred <- predict(NB_model, newdata = test_cl)
+
+#Step 6 : Model Evaluation
+# Confusion Matrix
+cm_nb <- table(y_pred, test_cl$rating)
+cm_nb
+
+# Model Evaluation
+confusionMatrix(cm_nb)
+
+false_positives<-cm_nb[1,2]
+false_positives
+false_negatives<-cm_nb[2,1]
+false_negatives
+
+true_positives<-cm_nb[1,1]
+true_positives
+true_negatives<-cm_nb[2,2]
+true_negatives
+
+specificity(cm_nb)
+sensitivity(cm_nb)
+
+recall <-true_positives/ (true_positives + false_negatives)
+recall
+
+precision <-true_positives/ (true_positives + false_positives)
+precision
+
+Fmeasure <- (2*precision*recall) / (precision + recall)
+Fmeasure
