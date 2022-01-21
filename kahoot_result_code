@@ -1,0 +1,117 @@
+#objective 1 : To evaluate middle-aged women's performance in learning Arabic based on post-test and pre-test score and task completion over the use of Kahoot!
+
+#load data
+kahoot<-read.csv(file="C:/Users/norazyrabinti.omar/Documents/R Project/DS Project/kahoot.csv")
+head(kahoot)
+
+# quick look at data
+tibble::glimpse(kahoot)
+
+#load package
+library(dplyr)
+library(plotrix)
+library(tidyverse)
+library(ggpubr)
+library(rstatix)
+library(rmarkdown)
+library(sqldf)
+library(pivottabler)
+
+
+# 1.Multiple conditions when adding new column to dataframe:
+#i) set grade for pre-test red quiz
+kahoot <- kahoot %>% mutate(a_Grade_pre_red =
+                              case_when(pre_test_score_red >= 0.90 ~ "A", 
+                                        pre_test_score_red >= 0.80 ~ "B",
+                                        pre_test_score_red >= 0.60 ~ "C",
+                                        pre_test_score_red >= 0.40 ~ "D",
+                                        pre_test_score_red <= 0.39 ~ "E")
+)
+
+#ii) set grade for post-test red quiz
+kahoot <- kahoot %>% mutate(b_Grade_post_red =
+                              case_when(post_test_score_red >= 0.90 ~ "A", 
+                                        post_test_score_red >= 0.80 ~ "B",
+                                        post_test_score_red >= 0.60 ~ "C",
+                                        post_test_score_red >= 0.40 ~ "D",
+                                        post_test_score_red <= 0.39 ~ "E")
+)
+
+#iii) set grade for pre-test green quiz
+kahoot <- kahoot %>% mutate(c_Grade_pre_green =
+                              case_when(pre_test_score_green >= 0.90 ~ "A", 
+                                        pre_test_score_green >= 0.80 ~ "B",
+                                        pre_test_score_green >= 0.60 ~ "C",
+                                        pre_test_score_green >= 0.40 ~ "D",
+                                        pre_test_score_green <= 0.39 ~ "E")
+)
+
+#iv) set grade for post-test green quiz
+kahoot <- kahoot %>% mutate(d_Grade_post_green =
+                              case_when(post_test_score_green >= 0.90 ~ "A", 
+                                        post_test_score_green >= 0.80 ~ "B",
+                                        post_test_score_green >= 0.60 ~ "C",
+                                        post_test_score_green >= 0.40 ~ "D",
+                                        post_test_score_green <= 0.39 ~ "E")
+)
+
+#checking the dataframe
+head(kahoot)
+
+#2. Extract last 4 columns only to get student's score
+kahoot_perf <- kahoot[,10:13]
+head(kahoot_perf)
+
+#3. Transform into long data: 
+# gather the before and after values in the same column
+kahoot2 <- kahoot_perf %>%
+  gather(key = "time", value = "score",a_Grade_pre_red , b_Grade_post_red ,c_Grade_pre_green,d_Grade_post_green )
+head(kahoot2, 10)
+
+#4. Add new column and the value is 1 to represent 1 student
+kahoot2$student <- c(1)
+head(kahoot2, 10)
+
+#5. Build pivot table to check student's performance
+pt <- PivotTable$new()
+pt$addData(kahoot2)
+pt$addColumnDataGroups("time")
+pt$addRowDataGroups("score")
+pt$defineCalculation(calculationName="students", summariseExpression="n()")
+pt$renderPivot()
+
+#checking the dataframa
+head(kahoot)
+
+#load data once again to get the original raw data
+kahoot<-read.csv(file="C:/Users/norazyrabinti.omar/Documents/R Project/DS Project/kahoot.csv")
+head(kahoot)
+
+#6. To calculate paired sample statistics (mean, sd, std error)
+kahoot %>%
+  summarise(across(pre_test_score_red:post_test_comp_time_green_sec, list(mean = mean, sd = sd, std.error = std.error)))
+
+head(kahoot)
+
+#7. Transform into long data: 
+# gather the before and after values in the same column
+kahoot.long <- kahoot %>%
+  gather(key = "group", value = "data", pre_test_score_red , pre_test_comp_time_red_sec,post_test_score_red,post_test_comp_time_red_sec,pre_test_score_green,pre_test_comp_time_green_sec,post_test_score_green ,post_test_comp_time_green_sec   )
+head(kahoot.long, 3)
+
+#8. To summarize paired sample statistics
+kahoot.long  %>%
+  group_by(group) %>%
+  get_summary_stats(data, type = "mean_sd")
+
+
+kahoot.long  %>%
+  group_by(group) %>%
+  get_summary_stats(data, type = "mean_se")
+
+#9. to build box plot for red quiz score
+kahoot_red_score <- kahoot %>%
+  gather(key = "red_test", value = "red_score", pre_test_score_red , post_test_score_red )
+head(kahoot_red_score, 3)
+
+
